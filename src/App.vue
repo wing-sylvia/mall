@@ -3,11 +3,11 @@
     <router-view></router-view>
     <main-tab-bar></main-tab-bar>
   </div>
-  <router-view/>
 </template>
 
-<script> 
+<script type="module">
 import MainTabBar from 'components/content/maintabbar/MainTabBar';
+
 export default {
   name: 'App',
   components:{
@@ -16,6 +16,7 @@ export default {
 }
 </script>
 
-<style lang="less">
 
+<style lang="less">
+  @import "assets/css/base.css";
 </style>
