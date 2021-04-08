@@ -5,16 +5,21 @@
         购物街
       </template>
     </nav-bar>
+    <tab-control :title = title  
+                    @tabClick = "tabClick"
+                    ref="tabControl2" class="tab-control" v-show="isTabFixed"></tab-control>
     <scroll class="content"
             ref="scroll"
             :probe-type="3"
             @scroll="contentScroll"
             :pull-up-load="true"
             @pullingUp="loadMore">
-      <home-swiper :banners = banners />
+      <home-swiper :banners = banners @swiperImgLoad ='swiperImgLoad'/>
       <recommend-view :recommends = recommends />
       <feature-view />
-      <tab-control :title = title class="tab-control" @tabClick = "tabClick"></tab-control>
+      <tab-control :title = title  
+                    @tabClick = "tabClick"
+                    ref="tabControl1"></tab-control>
       <goods-list :goods = "ShowGoods"/>
     </scroll>
     <back-top @click="backClick" v-show="isShowBackTop"/>
@@ -32,7 +37,9 @@
   import FeatureView from './childComps/FeatureView'
   import GoodsList from 'components/content/goods/GoodsList'
   import BackTop from 'components/content/backtop/BackTop';
+
   import {getHomeMultidata,getHomeGoods} from '../../network/home'
+  import {debounce} from 'common/utils.js';
 
   export default {
     name:'Home',
@@ -58,6 +65,9 @@
         },
         currentType: 'pop',
         isShowBackTop: false,
+        tabOffsetTop: 0,
+        isTabFixed:false,
+        saveY:0,
       }
     },
     created(){
@@ -65,6 +75,24 @@
       this.getHomeGoods('pop')
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
+    },
+    mounted(){
+      // const refresh = debounce(this.$refs.scroll.refresh,500)
+      // this.$bus.$on('imageLoad',()=>{
+      //   // console.log('----');
+      //   // this.$refs.scroll.refresh()
+      //   refresh()
+      // });
+      // setTimeout(() => {
+      //   this.$refs.scroll.refresh()
+      // },200)
+    },
+    activated(){
+      this.$refs.scroll.scrollTo(0,this.saveY,0)
+      this.$refs.scroll.refresh()
+    },
+    deactivated() {
+      this.saveY = this.$refs.scroll.getSaveY()
     },
     computed:{
       ShowGoods(){
@@ -85,15 +113,22 @@
             this.currentType = 'sell'
             break
         }
+        this.$refs.tabControl1.index = index
+        this.$refs.tabControl2.index = index
       },
       backClick(){
         this.$refs.scroll.scrollTo(0,0)
       },
       contentScroll(position) {
         this.isShowBackTop = (-position.y) > 1000
+
+        this.isTabFixed = (-position.y) > this.tabOffsetTop
       },
       loadMore(){
         this.getHomeGoods(this.currentType)
+      },
+      swiperImgLoad(){
+        this.tabOffsetTop = this.$refs.tabControl1.$el.offsetTop;
       },
       /* 网络请求方法 */
       getHomeMultidata(){
@@ -109,6 +144,9 @@
           this.goods[type].list.push(...res.data.list)
           this.goods[type].page += 1
           this.$refs.scroll.finishPullUp()
+          setTimeout(() => {
+            this.$refs.scroll.refresh()
+          },200)
         })
       }
     },
@@ -125,17 +163,17 @@
     background-color: var(--color-tint);
     color: #fff;
 
-    position: fixed;
+    /* position: fixed;
     left: 0;
     right: 0;
     top: 0;
-    z-index: 9;
+    z-index: 9; */
   }
 
   .tab-control {
-    position: sticky;
-    top: 44px;
+    position: relative;
     z-index: 9;
+    background-color: #fff;
   }
 
   .content {
