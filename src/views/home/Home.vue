@@ -13,7 +13,8 @@
             :probe-type="3"
             @scroll="contentScroll"
             :pull-up-load="true"
-            @pullingUp="loadMore">
+            @pullingUp="loadMore"
+            >
       <home-swiper :banners = banners @swiperImgLoad ='swiperImgLoad'/>
       <recommend-view :recommends = recommends />
       <feature-view />
@@ -36,10 +37,10 @@
   import RecommendView from './childComps/RecommendView'
   import FeatureView from './childComps/FeatureView'
   import GoodsList from 'components/content/goods/GoodsList'
-  import BackTop from 'components/content/backtop/BackTop';
+  
 
   import {getHomeMultidata,getHomeGoods} from '../../network/home'
-  import {debounce} from 'common/utils.js';
+  import {itemImageListenerMixin,backTopMixin} from 'common/mixin'
 
   export default {
     name:'Home',
@@ -51,8 +52,8 @@
       RecommendView,
       FeatureView,
       GoodsList,
-      BackTop,
-    },                                
+    },  
+    mixins:[itemImageListenerMixin,backTopMixin],                              
     data(){
       return {
         banners:[],
@@ -64,7 +65,6 @@
           'sell':{page: 0,list: []},
         },
         currentType: 'pop',
-        isShowBackTop: false,
         tabOffsetTop: 0,
         isTabFixed:false,
         saveY:0,
@@ -77,22 +77,16 @@
       this.getHomeGoods('sell')
     },
     mounted(){
-      // const refresh = debounce(this.$refs.scroll.refresh,500)
-      // this.$bus.$on('imageLoad',()=>{
-      //   // console.log('----');
-      //   // this.$refs.scroll.refresh()
-      //   refresh()
-      // });
-      // setTimeout(() => {
-      //   this.$refs.scroll.refresh()
-      // },200)
     },
     activated(){
       this.$refs.scroll.scrollTo(0,this.saveY,0)
       this.$refs.scroll.refresh()
     },
     deactivated() {
+      // 1.保存离开时的位置
       this.saveY = this.$refs.scroll.getSaveY()
+      // 2.取消全局事件的监听
+      this.$bus.off('imageLoad', this.itemImageListener)
     },
     computed:{
       ShowGoods(){
@@ -113,15 +107,15 @@
             this.currentType = 'sell'
             break
         }
-        this.$refs.tabControl1.index = index
-        this.$refs.tabControl2.index = index
-      },
-      backClick(){
-        this.$refs.scroll.scrollTo(0,0)
+        // 让两个tabControl的currentIndex保持一致
+        this.$refs.tabControl1.currentIndex = index
+        this.$refs.tabControl2.currentIndex = index
       },
       contentScroll(position) {
-        this.isShowBackTop = (-position.y) > 1000
-
+        // console.log(position);
+        // 是否显示回到顶部
+        this.listenBackShow(position)
+        // tabControl显示
         this.isTabFixed = (-position.y) > this.tabOffsetTop
       },
       loadMore(){
@@ -144,9 +138,9 @@
           this.goods[type].list.push(...res.data.list)
           this.goods[type].page += 1
           this.$refs.scroll.finishPullUp()
-          setTimeout(() => {
-            this.$refs.scroll.refresh()
-          },200)
+          // setTimeout(() => {
+          //   this.$refs.scroll.refresh()
+          // },200)
         })
       }
     },
@@ -178,7 +172,6 @@
 
   .content {
     overflow: hidden;
-
     position: absolute;
     top: 44px;
     bottom: 49px;

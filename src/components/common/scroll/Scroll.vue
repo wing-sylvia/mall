@@ -19,7 +19,8 @@
       pullUpLoad: {
         type: Boolean,
         default: false
-      }
+      },
+      // observeImage:true
     },
     data() {
       return {
@@ -42,7 +43,7 @@
       })
 
       // 3.监听上拉事件
-      this.scroll.on('pullingUp', () => {
+      this.scroll.on('scrollEnd', () => {
         this.$emit('pullingUp')
       })
     },

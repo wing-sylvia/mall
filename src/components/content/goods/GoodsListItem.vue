@@ -1,6 +1,6 @@
 <template>
-  <div class="goods-item">
-    <img :src="goodsItem.show.img" alt="" @load="imageLoad" v-bind="$attrs">
+  <div class="goods-item" @click="itemClick">
+    <img :src= 'showImg' alt="" @load="imageLoad">
     <div class="goods-info">
       <p>{{goodsItem.title}}</p>
       <span class="price">{{goodsItem.price}}</span>
@@ -20,10 +20,25 @@
         }
       }
     },
+    computed:{
+      showImg(){
+        return this.goodsItem.image || this.goodsItem.show.img
+      }
+    },
     methods: {
-      // imageLoad(){
-      //   this.$bus.$emit('imageLoad')
-      // }
+      imageLoad(){
+        this.$bus.emit('imageLoad')
+
+        // if(this.$route.path.indexof('/home')){
+        //   this.$bus.emit('homeImageLoad')
+        // }else if(this.$route.path.indexof('/detail')){
+        //   this.$bus.emit('detailImageLoad')
+        // }
+      },
+      itemClick(){
+        //跳转详情页
+        this.$router.push('/detail/' + this.goodsItem.iid)
+      }
     },
   }
 </script>
