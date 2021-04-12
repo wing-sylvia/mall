@@ -15,7 +15,7 @@
       <good-list :goods = 'recommends' ref="recommend"/>
     </scroll>
     <back-top @click="backClick" v-show="isShowBackTop"/>
-    <detail-bottom-bar />
+    <detail-bottom-bar @addToCart = 'addToCart' class="detailBtm"/>
   </div>
 </template>
 
@@ -144,6 +144,18 @@
             // console.log(this.currentIndex);
           }
         }
+      },
+      addToCart(){
+        // 1.获取商品需要展示的信息
+        const product = {}
+        product.image = this.topImages[0];
+        product.title = this.goodsInfo.title;
+        product.desc = this.goodsInfo.desc;
+        product.price = this.goodsInfo.oldNowPrice;
+        product.iid = this.goodsInfo.iid;
+
+        // 2.将商品添加到购物车
+        this.$store.dispatch('addCart',product)
       }
     },
   }
@@ -161,7 +173,9 @@
     z-index: 9;
     background-color: #fff;
   }
+
   .content{
     height:calc(100% - 44px - 62px)
   }
+
 </style>
