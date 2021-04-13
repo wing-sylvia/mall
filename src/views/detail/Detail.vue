@@ -36,6 +36,7 @@
   import {Goods,Shop,GoodsParam} from 'network/detail'
   import {itemImageListenerMixin,backTopMixin} from 'common/mixin'
 
+  import {mapActions} from 'vuex';
   import {debounce} from 'common/utils'
   
   export default {
@@ -110,7 +111,7 @@
           this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
           this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
           this.themeTopYs.push(Number.MAX_VALUE)
-          console.log(this.themeTopYs);
+          // console.log(this.themeTopYs);
         })
       }) 
     },
@@ -120,6 +121,7 @@
       this.$bus.off('imageLoad', this.itemImageListener);
     },
     methods: {
+      ...mapActions(['addCart']),
       // 4.监听图片加载完成
       detailImgLoad(){
         // 可滚动区域刷新
@@ -151,11 +153,18 @@
         product.image = this.topImages[0];
         product.title = this.goodsInfo.title;
         product.desc = this.goodsInfo.desc;
-        product.price = this.goodsInfo.oldNowPrice;
-        product.iid = this.goodsInfo.iid;
+        product.price = this.goodsInfo.lowNowPrice;
+        product.iid = this.iid;
 
         // 2.将商品添加到购物车
-        this.$store.dispatch('addCart',product)
+        this.addCart(product).then(res => {
+          console.log(res);
+        })
+
+        // this.$store.dispatch('addCart',product).then(res => {
+        //   console.log(res);
+        // })
+        // this.$toast.show('加入购物车成功',2000)
       }
     },
   }

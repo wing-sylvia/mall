@@ -79,10 +79,12 @@
     mounted(){
     },
     activated(){
+      // console.log('homeactivate');
       this.$refs.scroll.scrollTo(0,this.saveY,0)
       this.$refs.scroll.refresh()
     },
     deactivated() {
+      // console.log('homedeactivate');
       // 1.保存离开时的位置
       this.saveY = this.$refs.scroll.getSaveY()
       // 2.取消全局事件的监听
